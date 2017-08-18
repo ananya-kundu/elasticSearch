@@ -155,26 +155,29 @@ app.get('/autocomplete', function (req, res) {
         type: _type,
         body: {
             "query": {
-                "filtered": {
-                    "query": {
-                        "multi_match": {
-                            "query": req.query.term,
-                            "fields": ["first_name.autocomplete"]
-                        }
-                    }
-                }
 
+                  match: {
+                    first_name: req.query.term
+                  }
             }
         }
     }).then(function (resp) {
 
+      // "filtered": {
+      //   "query": {
+      //       "multi_match": {
+      //           "query": req.query.term,
+      //           "fields": ["first_name.autocomplete"]
+      //       }
+      //   }
+      // }
         var results = resp.hits.hits.map(function(hit){
             return hit._source.first_name + " " + hit._source.last_name;
         });
 
         res.send(results);
     }, function (err) {
-        console.trace(err.message);
+        console.trace(err);
         res.send({response: err.message});
     });
 });
