@@ -32,8 +32,8 @@ if (process.env.SEARCHBOX_URL) {
 console.info(connectionString);
 
 var client = new elasticsearch.Client({
-    host: connectionString,
-    log: 'debug'
+    host: connectionString
+    ,log: 'debug'
 });
 
 var _index = "company";
@@ -176,6 +176,7 @@ app.get('/autocomplete', function (req, res) {
         });
 
         res.send(results);
+        console.log(results);
     }, function (err) {
         console.trace(err);
         res.send({response: err.message});
@@ -189,27 +190,27 @@ app.get('/search', function (req, res) {
 
     var filter = {};
     filter[aggField] = aggValue;
-
     client.search({
         index: _index,
         type: _type,
         body: {
             "query": {
-                "filtered": {
-                    "query": {
-                        "multi_match": {
-                            "query": req.query.q,
-                            "fields": ["first_name^100", "last_name^20", "country^5", "city^3", "language^10", "job_title^50"],
-                            "fuzziness": 1
-                        }
-                    },
-                    "filter": {
-                        "term": (aggField ? filter : undefined)
-                    }
+                // "bool": {
+                //     "filter": {
+                //         "term": (aggField ? filter : undefined)
+                //     }
+                // },
+                "multi_match": {
+                    "query": req.query.q,
+                    "fields": ["first_name^100", "last_name^20", "country^5", "city^3", "language^10", "job_title^50"],
+                    "fuzziness": 1
                 }
+                // match: {
+                //   first_name: req.query.term
+                // }
 
-            },
-            "aggs": {
+            }
+            , "aggs": {
                 "country": {
                     "terms": {
                         "field": "country.raw"
@@ -229,10 +230,10 @@ app.get('/search', function (req, res) {
                     "terms": {
                         "field": "job_title.raw"
                     }
-                },
-                "gender": {
+                }
+                , "gender": {
                     "terms": {
-                        "field": "gender"
+                        "field": "gender.raw"
                     }
                 }
             },
@@ -259,6 +260,7 @@ app.get('/search', function (req, res) {
             }
         }
     }).then(function (resp) {
+        console.log("search",JSON.stringify([resp, req.query],0,4));
         res.render('search', {response: resp, query: req.query.q});
     }, function (err) {
         console.trace(err.message);
@@ -278,3 +280,7 @@ if ('development' == app.get('env')) {
 app.listen(app.get('port'), function () {
     console.log('Express server listening on port ' + app.get('port'));
 });
+
+// 
+// span9
+// h4 #{response.hits} Results - Took #{response.took}  miliseconds
