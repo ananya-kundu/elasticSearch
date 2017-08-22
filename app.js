@@ -32,8 +32,8 @@ if (process.env.SEARCHBOX_URL) {
 console.info(connectionString);
 
 var client = new elasticsearch.Client({
-    host: connectionString
-    ,log: 'debug'
+    host: connectionString,
+    log: 'debug'
 });
 
 var _index = "company";
@@ -281,6 +281,7 @@ app.listen(app.get('port'), function () {
     console.log('Express server listening on port ' + app.get('port'));
 });
 
-// 
+//
 // span9
 // h4 #{response.hits} Results - Took #{response.took}  miliseconds
+// 
